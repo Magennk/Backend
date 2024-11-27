@@ -16,7 +16,7 @@ exports.getAllDogs = async (req, res) => {
       isinrestrictedbreedscategory: dog.isinrestrictedbreedscategory,
       description: dog.description,
       energylevel: dog.energylevel,
-      image: `C:/BarkBuddy/Frontend/barkbuddy-web/public/data/images/${dog.id}.jpeg`, // Assuming image path based on dog ID
+      image: `/data/images/${dog.id}.jpeg`, // Assuming image path based on dog ID
       owner: {
         firstname: dog.firstname,
         lastname: dog.lastname,
