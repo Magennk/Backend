@@ -19,3 +19,15 @@ app.use('/api/dogs', dogsRoutes); // Dogs API
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+
+
+const db = require('./db/db'); // Add this line to include the database module
+
+// Test the database connection
+db.query('SELECT 1 + 1 AS result')
+  .then((res) => {
+    console.log('Database connected successfully:', res.rows[0]);
+  })
+  .catch((err) => {
+    console.error('Database connection error:', err.message);
+  });
