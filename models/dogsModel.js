@@ -95,7 +95,7 @@ exports.getNotFriendsDogsAndOwners = async (loggedInUserEmail) => {
         o.gender,
         EXTRACT(YEAR FROM CURRENT_DATE) - EXTRACT(YEAR FROM o.dateofbirth) AS ownerage,
         o.city,
-        o.url AS ownerimage
+        o.image AS ownerimage
     FROM 
         public.dog d
     JOIN 
