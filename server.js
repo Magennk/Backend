@@ -2,7 +2,7 @@ require('dotenv').config(); // Load environment variables
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-
+const meetingsRoutes = require('./routes/meetings'); // Import meetings route
 const dogsRoutes = require('./routes/dogs'); // Dogs route
 
 const app = express();
@@ -14,7 +14,7 @@ app.use(bodyParser.json());
 
 // Routes
 app.use('/api/dogs', dogsRoutes); // Dogs API
-
+app.use('/api/meetings', meetingsRoutes); //Meetings API
 // Start Server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
@@ -31,3 +31,5 @@ db.query('SELECT 1 + 1 AS result')
   .catch((err) => {
     console.error('Database connection error:', err.message);
   });
+
+

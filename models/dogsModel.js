@@ -89,6 +89,7 @@ exports.getNotFriendsDogsAndOwners = async (loggedInUserEmail) => {
         d.isinrestrictedbreedscategory,
         d.description,
         d.energylevel,
+        d.image,
         o.firstname,
         o.lastname,
         o.email,
