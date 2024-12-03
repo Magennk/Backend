@@ -6,3 +6,5 @@ const meetingsController = require('../controllers/meetingsController');
 router.get('/get-my-meetings', meetingsController.getMeetings);
 
 module.exports = router;
+
+

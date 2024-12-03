@@ -1,69 +1,47 @@
-const express = require('express');
-const { Pool } = require('pg');
-const app = express();
-const port = 3001;
+const meetingsModel = require('../models/meetingsModel');
 
-// Configure the database connection
-const pool = new Pool({
-  user: 'your_db_user',
-  host: 'your_db_host',
-  database: 'your_database_name',
-  password: 'your_password',
-  port: 5432, // Default PostgreSQL port
-});
-
-
-app.delete("/api/delete-meeting", async (req,res) => {
-  const meeting = req.body
-  const query  ="DELETE FROM public.meeting WHERE subject ="
-})
-// API endpoint to fetch meetings
-app.get('/api/meetings', async (req, res) => {
+exports.getMeetings = async (req, res) => {
   try {
-    const today = new Date();
-    const formattedDate = today.toISOString().split('T')[0]; // Format date as YYYY-MM-DD
+    const email = req.query.email; // Extract email from query parameter
+    if (!email) {
+      return res.status(400).json({ message: "User email is required" });
+    }
 
-    // Query for upcoming and past meetings
-    const result = await pool.query(`
-      SELECT 
-        m.date, 
-        m.hour, 
-        m.location, 
-        m.subject, 
-        d.name AS buddyName,
-        d.dogid as dogid, 
-        o.email as ownerEmail
-      FROM public.meeting AS m
-      JOIN public.owner AS o ON 
-        (o.email = m.owneremail1 OR o.email = m.owneremail2)
-      JOIN public.belongs_to AS bt ON bt.owneremail = o.email
-      JOIN public.dog AS d ON d.dogid = bt.dogid
-      WHERE o.email <> $1
-    `, ['current_user_email']); // Replace with the current user's email dynamically
+    const meetings = await meetingsModel.getMeetingsByUser(email); // Fetch meetings
+    const currentDateTime = new Date(); // Current datetime for comparison
 
-    const meetings = result.rows;
-
-    // Separate upcoming and past meetings
+    // Separate meetings into upcoming and past
     const upcomingMeetings = [];
     const pastMeetings = [];
-    const currentDate = new Date();
 
     meetings.forEach((meeting) => {
-      const meetingDate = new Date(`${meeting.date}T${meeting.hour}`);
-      if (meetingDate >= currentDate) {
-        upcomingMeetings.push(meeting);
+      // Combine date and time into a single Date object
+      const meetingDateTime = new Date(
+        meeting.date.toISOString().split("T")[0] + "T" + meeting.hour
+      );
+
+      const meetingData = {
+        date: meeting.date.toISOString().split("T")[0], // Format date as YYYY-MM-DD
+        time: meeting.hour, // Use the time from the database
+        location: meeting.location,
+        subject: meeting.subject,
+        buddyNameOrganizer: meeting.buddynameorganizer,
+        buddyNameParticipant: meeting.buddynameparticipant,
+        ownerNameOrganizer: meeting.ownernameorganizer,
+        ownerNameParticipant: meeting.ownernameparticipant,
+      };
+
+      if (meetingDateTime >= currentDateTime) {
+        upcomingMeetings.push(meetingData);
       } else {
-        pastMeetings.push(meeting);
+        pastMeetings.push(meetingData);
       }
     });
 
-    res.json({ upcomingMeetings, pastMeetings });
+    res.status(200).json({ upcomingMeetings, pastMeetings });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error fetching meetings:", error.message);
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
-});
+};
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-});
