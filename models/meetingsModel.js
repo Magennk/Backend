@@ -24,7 +24,6 @@ exports.getMeetingsByUser = async (email) => {
     `;
   
     const result = await db.query(query, [email]);
-    console.log('Query Result:', result.rows); // Debug log
     return result.rows;
   };
   
