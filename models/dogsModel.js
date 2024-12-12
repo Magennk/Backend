@@ -208,3 +208,84 @@ exports.getDogAndOwner = async (dogId) => {
   return result.rows[0];
 };
 
+// Function to fetch friends and their dogs:
+exports.getFriendsDogsAndOwners = async (loggedInUserEmail) => {
+  const query = `
+    SELECT 
+        d.dogid AS id,
+        d.name,
+        d.breed,
+        EXTRACT(YEAR FROM CURRENT_DATE) - d.yearofbirth AS age,
+        d.sex,
+        d.region,
+        d.isvaccinated,
+        d.isgoodwithkids,
+        d.isgoodwithanimals,
+        d.isinrestrictedbreedscategory,
+        d.description,
+        d.energylevel,
+        d.image,
+        o.firstname,
+        o.lastname,
+        o.email,
+        o.gender,
+        EXTRACT(YEAR FROM CURRENT_DATE) - EXTRACT(YEAR FROM o.dateofbirth) AS ownerage,
+        o.city,
+        o.image AS ownerimage
+    FROM 
+        public.dog d
+    JOIN 
+        public.belongs_to bt ON d.dogid = bt.dogid
+    JOIN 
+        public.owner o ON bt.owneremail = o.email
+    JOIN 
+        public.communication c 
+        ON (c.owneremail1 = o.email AND c.owneremail2 = $1) 
+        OR (c.owneremail2 = o.email AND c.owneremail1 = $1)
+    WHERE 
+        c.isfriend = true -- Include only friends
+        AND o.email != $1 -- Exclude the logged-in user
+    ORDER BY 
+        d.dogid ASC;
+  `;
+  console.log('Executing query to fetch friends for:', loggedInUserEmail); // Debug log
+  const result = await db.query(query, [loggedInUserEmail]);
+  return result.rows;
+};
+
+// Function to fetch the logged-in owner's details
+exports.getOwnerAndDog = async (loggedInUserEmail) => {
+  const query = `
+    SELECT 
+        d.dogid AS id,
+        d.name AS dog_name,
+        d.breed,
+        EXTRACT(YEAR FROM CURRENT_DATE) - d.yearofbirth AS dog_age,
+        d.sex AS dog_sex,
+        d.region AS dog_region,
+        d.isvaccinated,
+        d.isgoodwithkids,
+        d.isgoodwithanimals,
+        d.isinrestrictedbreedscategory,
+        d.description AS dog_description,
+        d.energylevel,
+        d.image AS dog_image,
+        o.firstname AS owner_firstname,
+        o.lastname AS owner_lastname,
+        o.email AS owner_email,
+        o.gender AS owner_gender,
+        EXTRACT(YEAR FROM CURRENT_DATE) - EXTRACT(YEAR FROM o.dateofbirth) AS owner_age,
+        o.city AS owner_city,
+        o.image AS owner_image
+    FROM 
+        public.dog d
+    JOIN 
+        public.belongs_to bt ON d.dogid = bt.dogid
+    JOIN 
+        public.owner o ON bt.owneremail = o.email
+    WHERE 
+        o.email = $1; -- Filter by logged-in user's email
+  `;
+  const result = await db.query(query, [loggedInUserEmail]);
+  return result.rows;
+};

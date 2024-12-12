@@ -176,4 +176,70 @@ exports.getDogAndOwner = async (req, res) => {
   }
 };
 
+// Get friends - dogs and owners
+exports.getFriendsDogsAndOwners = async (req, res) => {
+  try {
+    const loggedInUserEmail = req.query.email; // Get email from query parameter
+
+    if (!loggedInUserEmail) {
+      return res.status(400).json({ message: 'User email is required' });
+    }
+
+    const friendsDogsAndOwners = await dogsModel.getFriendsDogsAndOwners(loggedInUserEmail);
+    res.status(200).json(friendsDogsAndOwners);
+  } catch (error) {
+    console.error('Error in getFriendsDogsAndOwners:', error.message);
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+};
+
+
+// Get logged in owner's information and dog's:
+exports.getOwnerAndDog = async (req, res) => {
+  try {
+    const loggedInUserEmail = req.query.email; // Get email from query parameter
+
+    if (!loggedInUserEmail) {
+      return res.status(400).json({ message: "User email is required" });
+    }
+
+    const ownerAndDogData = await dogsModel.getOwnerAndDog(loggedInUserEmail);
+
+    if (!ownerAndDogData || ownerAndDogData.length === 0) {
+      return res.status(404).json({ message: "No owner or dog found for the given email" });
+    }
+
+    // Transforming the database result into the required JSON structure
+    const formattedResponse = ownerAndDogData.map((dog) => ({
+      id: dog.id,
+      name: dog.dog_name,
+      breed: dog.breed,
+      age: dog.dog_age,
+      sex: dog.dog_sex,
+      region: dog.dog_region,
+      isvaccinated: dog.isvaccinated,
+      isgoodwithkids: dog.isgoodwithkids,
+      isgoodwithanimals: dog.isgoodwithanimals,
+      isinrestrictedbreedscategory: dog.isinrestrictedbreedscategory,
+      description: dog.dog_description,
+      energylevel: dog.energylevel,
+      image: dog.dog_image,
+      owner: {
+        firstname: dog.owner_firstname,
+        lastname: dog.owner_lastname,
+        email: dog.owner_email,
+        gender: dog.owner_gender,
+        age: dog.owner_age,
+        city: dog.owner_city,
+        image: dog.owner_image,
+      },
+    }));
+
+    res.status(200).json(formattedResponse);
+  } catch (error) {
+    console.error("Error in getOwnerAndDog:", error.message);
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
 
