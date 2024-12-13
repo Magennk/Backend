@@ -26,3 +26,27 @@ exports.loginUser = async (req, res) => {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
+
+// Hnadle Owner's information update
+exports.updateOwner = async (req, res) => {
+    try {
+      const { email } = req.body; // Extract email from the request body
+      const updatedData = req.body; // Extract updated owner data
+  
+      if (!email) {
+        return res.status(400).json({ message: "Owner email is required" });
+      }
+  
+      const updatedOwner = await usersModel.updateOwner(email, updatedData); // Call model function
+  
+      if (!updatedOwner) {
+        return res.status(404).json({ message: "Owner not found" });
+      }
+  
+      res.status(200).json({ message: "Owner updated successfully", owner: updatedOwner });
+    } catch (error) {
+      console.error("Error updating owner:", error.message);
+      res.status(500).json({ message: "Server Error", error: error.message });
+    }
+  };
+  
