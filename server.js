@@ -2,9 +2,11 @@ require('dotenv').config(); // Load environment variables
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const meetingsRoutes = require('./routes/meetings'); // Import meetings route
-const dogsRoutes = require('./routes/dogs'); // Dogs route
-const cityRoutes = require('./routes/city'); // City route
+const meetingsRoutes = require('./routes/meetings'); // Import Meetings routes
+const dogsRoutes = require('./routes/dogs'); // Import Dogs routes
+const cityRoutes = require('./routes/city'); // Import City routes
+const usersRoutes = require("./routes/users"); // Import Users routes
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -17,6 +19,7 @@ app.use(bodyParser.json());
 app.use('/api/dogs', dogsRoutes); // Dogs API
 app.use('/api/meetings', meetingsRoutes); //Meetings API
 app.use('/api', cityRoutes);// City API
+app.use("/api/users", usersRoutes); // Users API
 // Start Server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
