@@ -10,6 +10,7 @@ router.get('/friends-dogs-and-owners', dogsController.getFriendsDogsAndOwners); 
 router.get('/owner-and-dog', dogsController.getOwnerAndDog); // Route to get the logged-in owner's information
 router.get('/dog/:id/without-owner', dogsController.getDogWithoutOwner); // Get a Specific Dog Without Its Owner’s Data.
 router.get('/:id', dogsController.getDogById); // Fetch a single dog by ID
+router.patch("/update-dog", dogsController.updateDog); // update-dog data
 
 // owners
 router.get('/owner/:email/without-dog', dogsController.getOwnerWithoutDog); // Route to get a specific owner without their dogs

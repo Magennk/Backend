@@ -289,3 +289,39 @@ exports.getOwnerAndDog = async (loggedInUserEmail) => {
   const result = await db.query(query, [loggedInUserEmail]);
   return result.rows;
 };
+
+// Update Dog information
+// Used in "Edit Dog Information" at "MyProfile"
+exports.updateDog = async (dogId, updatedData) => {
+  const query = `
+    UPDATE public.dog
+    SET 
+      name = $1,
+      breed = $2,
+      region = $3,
+      isvaccinated = $4,
+      isgoodwithkids = $5,
+      isgoodwithanimals = $6,
+      isinrestrictedbreedscategory = $7,
+      description = $8,
+      energylevel = $9
+    WHERE dogid = $10
+    RETURNING dogid, name, breed, region, isvaccinated, isgoodwithkids, isgoodwithanimals, isinrestrictedbreedscategory, description, energylevel;
+  `;
+  const values = [
+    updatedData.name,
+    updatedData.breed,
+    updatedData.region,
+    updatedData.isvaccinated,
+    updatedData.isgoodwithkids,
+    updatedData.isgoodwithanimals,
+    updatedData.isinrestrictedbreedscategory,
+    updatedData.description,
+    updatedData.energylevel,
+    dogId,
+  ];
+
+  const result = await db.query(query, values); // Execute the update query
+  return result.rows[0]; // Return the updated dog information
+};
+

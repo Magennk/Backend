@@ -242,4 +242,28 @@ exports.getOwnerAndDog = async (req, res) => {
   }
 };
 
+// Update Dog information
+// Mostly use in "Edit Dog Information" at "MyProfile"
+exports.updateDog = async (req, res) => {
+  try {
+    const { dogId } = req.body; // Extract dogId from the request body
+    const updatedData = req.body; // Extract updated dog data
+
+    if (!dogId) {
+      return res.status(400).json({ message: "Dog ID is required" });
+    }
+
+    const updatedDog = await dogsModel.updateDog(dogId, updatedData); // Call model function
+
+    if (!updatedDog) {
+      return res.status(404).json({ message: "Dog not found" });
+    }
+
+    res.status(200).json({ message: "Dog updated successfully", dog: updatedDog });
+  } catch (error) {
+    console.error("Error updating dog:", error.message);
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
 
