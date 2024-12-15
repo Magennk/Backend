@@ -56,7 +56,7 @@ exports.getDogById = async (id) => {
       o.gender,
       EXTRACT(YEAR FROM CURRENT_DATE) - EXTRACT(YEAR FROM o.dateofbirth) AS ownerage,
       o.city,
-      o.url AS ownerimage
+      o.image AS ownerimage
     FROM 
       public.dog d
     JOIN 
@@ -192,7 +192,7 @@ exports.getDogAndOwner = async (dogId) => {
         o.gender AS owner_gender,
         EXTRACT(YEAR FROM CURRENT_DATE) - EXTRACT(YEAR FROM o.dateofbirth) AS owner_age,
         o.city AS owner_city,
-        o.url AS owner_image
+        o.image AS owner_image
     FROM 
         public.dog d
     JOIN 
