@@ -25,6 +25,7 @@ exports.getMeetings = async (req, res) => {
         time: meeting.hour, // Use the time from the database
         location: meeting.location,
         subject: meeting.subject,
+        meeting_id: meeting.meeting_id,
         buddyNameOrganizer: meeting.buddynameorganizer,
         buddyNameParticipant: meeting.buddynameparticipant,
         ownerNameOrganizer: meeting.ownernameorganizer,
@@ -45,23 +46,38 @@ exports.getMeetings = async (req, res) => {
   }
 };
 
+// Delete a meeting by meeting_id
 exports.deleteMeeting = async (req, res) => {
   try {
-    const { meeting_id } = req.params; // Extract meeting_id from URL parameter
+    const { meeting_id } = req.params; // Extract meeting_id from the URL parameter
 
-    // SQL query to delete the meeting
-    const query = `DELETE FROM public.meeting WHERE meeting_id = $1 RETURNING *`;
-    const result = await db.query(query, [meeting_id]);
+    // Validate meeting_id
+    if (!meeting_id) {
+      return res.status(400).json({ message: "Meeting ID is required" });
+    }
 
-    if (result.rowCount === 0) {
+    console.log("Meeting ID to delete:", meeting_id);
+
+    // Check if the meeting exists
+    const meetingExists = await meetingsModel.checkMeetingExists(meeting_id);
+    if (!meetingExists) {
+      console.log("Meeting not found:", meeting_id);
       return res.status(404).json({ message: "Meeting not found" });
     }
 
+    // Delete the meeting
+    const isDeleted = await meetingsModel.deleteMeetingById(meeting_id);
+    if (!isDeleted) {
+      return res.status(500).json({ message: "Failed to delete the meeting" });
+    }
+
+    // Success response
     res.status(200).json({ message: "Meeting deleted successfully" });
   } catch (error) {
     console.error("Error deleting meeting:", error.message);
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
+
 
 

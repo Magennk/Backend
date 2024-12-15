@@ -8,6 +8,7 @@ exports.getMeetingsByUser = async (email) => {
         m.hour,
         m.location,
         m.subject,
+        m.meeting_id,
         d1.name AS buddyNameOrganizer,
         d2.name AS buddyNameParticipant,
         o1.firstname AS ownerNameOrganizer,
@@ -25,5 +26,19 @@ exports.getMeetingsByUser = async (email) => {
   
     const result = await db.query(query, [email]);
     return result.rows;
+  };
+
+  // Check if a meeting exists by meeting_id
+  exports.checkMeetingExists = async (meeting_id) => {
+    const query = `SELECT * FROM public.meeting WHERE meeting_id = $1`;
+    const result = await db.query(query, [meeting_id]);
+    return result.rowCount > 0; // Return true if the meeting exists, false otherwise
+  };
+  
+  // Delete a meeting by meeting_id
+  exports.deleteMeetingById = async (meeting_id) => {
+    const query = `DELETE FROM public.meeting WHERE meeting_id = $1 RETURNING *`;
+    const result = await db.query(query, [meeting_id]);
+    return result.rowCount > 0; // Return true if a row was deleted, false otherwise
   };
   
