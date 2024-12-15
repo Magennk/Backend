@@ -45,3 +45,23 @@ exports.getMeetings = async (req, res) => {
   }
 };
 
+exports.deleteMeeting = async (req, res) => {
+  try {
+    const { meeting_id } = req.params; // Extract meeting_id from URL parameter
+
+    // SQL query to delete the meeting
+    const query = `DELETE FROM public.meeting WHERE meeting_id = $1 RETURNING *`;
+    const result = await db.query(query, [meeting_id]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: "Meeting not found" });
+    }
+
+    res.status(200).json({ message: "Meeting deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting meeting:", error.message);
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
+
