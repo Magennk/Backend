@@ -74,6 +74,7 @@ exports.getDogById = async (id) => {
 // retrieve all dogs and their owners, excluding:
 // The logged-in user’s data.
 // The logged-in user’s friends (based on the communication table).
+// The logged-in user's friends request (that he sent).
 exports.getNotFriendsDogsAndOwners = async (loggedInUserEmail) => {
   const query = `
     SELECT 
@@ -109,10 +110,12 @@ exports.getNotFriendsDogsAndOwners = async (loggedInUserEmail) => {
         OR (c.owneremail2 = o.email AND c.owneremail1 = $1)
     WHERE 
         c.isfriend IS DISTINCT FROM true -- Exclude friends
+        AND (c.iswaitingconfirmation IS DISTINCT FROM true OR c.iswaitingconfirmation IS NULL) -- Exclude pending requests
         AND o.email != $1 -- Exclude the logged-in user
     ORDER BY 
         d.dogid ASC;
   `;
+
   console.log('Executing query with email:', loggedInUserEmail); // Debug log
   const result = await db.query(query, [loggedInUserEmail]);
   return result.rows;
