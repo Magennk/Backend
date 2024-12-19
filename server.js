@@ -8,6 +8,7 @@ const cityRoutes = require('./routes/city'); // Import City routes
 const usersRoutes = require("./routes/users"); // Import Users routes
 const friendsRoutes = require("./routes/friends"); // Import Friends routes
 const scheduleMeetingRoutes = require('./routes/scheduleAMeeting'); // Import Schedule a Meeting routes
+const chatRoutes = require('./routes/chat'); // Import chat routes
 
 
 const app = express();
@@ -24,6 +25,7 @@ app.use('/api', cityRoutes);// City API
 app.use("/api/users", usersRoutes); // Users API
 app.use("/api/friends", friendsRoutes); // Friends API
 app.use('/api/meetings', scheduleMeetingRoutes); //Schedule a meeting API
+app.use('/api/chat', chatRoutes); // Register chat routes
 // Start Server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
