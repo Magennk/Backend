@@ -50,3 +50,23 @@ exports.updateOwner = async (req, res) => {
     }
   };
   
+  // call the checkEmailExists function that check if an email already exists in the database.
+  exports.checkEmail = async (req, res) => {
+    try {
+      const { email } = req.query; // Extract email from query parameters
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+  
+      const emailExists = await usersModel.checkEmailExists(email); // Call model function
+      if (emailExists) {
+        return res.status(200).json({ exists: true, message: "Email is already registered" });
+      } else {
+        return res.status(200).json({ exists: false, message: "Email is available" });
+      }
+    } catch (error) {
+      console.error("Error in checkEmail:", error.message);
+      res.status(500).json({ message: "Server Error", error: error.message });
+    }
+  };
+  

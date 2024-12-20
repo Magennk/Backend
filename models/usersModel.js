@@ -35,3 +35,13 @@ exports.updateOwner = async (email, updatedData) => {
     return result.rows[0]; // Return the updated owner information
   };
   
+  // Check if an email already exists in the database
+exports.checkEmailExists = async (email) => {
+  const query = `
+    SELECT email 
+    FROM public.owner 
+    WHERE email = $1;
+  `;
+  const result = await db.query(query, [email]); // Query the database
+  return result.rows.length > 0; // Return true if email exists
+};
