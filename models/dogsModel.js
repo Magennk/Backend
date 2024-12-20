@@ -328,3 +328,41 @@ exports.updateDog = async (dogId, updatedData) => {
   return result.rows[0]; // Return the updated dog information
 };
 
+
+// Function to register a new dog to the database
+exports.registerDog = async (dogData) => {
+  console.log("register Dog data:");
+  console.log(dogData);
+  const query = `
+    INSERT INTO public.dog (name, yearofbirth, sex, breed, region, isvaccinated, isgoodwithkids, isgoodwithanimals, isinrestrictedbreedscategory, description, energylevel, image)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+    RETURNING dogid, name;
+  `;
+  const values = [
+    dogData.name,
+    dogData.yearofbirth,
+    dogData.sex,
+    dogData.breed,
+    dogData.city,
+    dogData.isvaccinated,
+    dogData.isgoodWithKids,
+    dogData.isgoodWithAnimals,
+    dogData.isinrestrictedbreedscategory,
+    dogData.description,
+    dogData.energyLevel,
+    dogData.image,
+  ];
+  const result = await db.query(query, values);
+  return result.rows[0]; // Return inserted dog data
+};
+
+// Function to connect owner and dog  
+exports.linkOwnerAndDog = async (ownerEmail, dogId) => {
+  const query = `
+    INSERT INTO public.belongs_to (owneremail, dogid)
+    VALUES ($1, $2);
+  `;
+  const values = [ownerEmail, dogId];
+  await db.query(query, values); // Execute query, no return needed
+};
+

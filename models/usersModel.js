@@ -45,3 +45,26 @@ exports.checkEmailExists = async (email) => {
   const result = await db.query(query, [email]); // Query the database
   return result.rows.length > 0; // Return true if email exists
 };
+
+
+// Function to register a new owner in the database
+exports.registerOwner = async (ownerData) => {
+  const query = `
+    INSERT INTO public.owner (email, firstname, lastname, city, password, dateofbirth, gender, image)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    RETURNING email, firstname, lastname, city, gender, dateofbirth, image;
+  `;
+  const values = [
+    ownerData.email,
+    ownerData.firstName, // Adjust case for field name
+    ownerData.lastName,  // Adjust case for field name
+    ownerData.city,
+    ownerData.password,  // Add password for registration
+    ownerData.dob,
+    ownerData.gender,
+    `/data/owners/${ownerData.email}.jpeg` || null, // Handle cases where image is empty
+  ];
+  const result = await db.query(query, values); // Execute query
+  return result.rows[0];
+};
+

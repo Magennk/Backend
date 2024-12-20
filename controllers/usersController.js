@@ -1,4 +1,5 @@
 const usersModel = require("../models/usersModel"); // Import the users model
+const dogsModel = require('../models/dogsModel'); // Import the dogs model
 
 // Handle login requests
 exports.loginUser = async (req, res) => {
@@ -69,4 +70,39 @@ exports.updateOwner = async (req, res) => {
       res.status(500).json({ message: "Server Error", error: error.message });
     }
   };
+
+
+// Function to register an owner and their dog, and link them in the database
+exports.registerOwnerAndDog = async (req, res) => {
+  try {
+    const { owner, dog } = req.body; // Extract account, owner, and dog data
+    console.log(req.body);
+
+    if (!dog || !owner) {
+      return res.status(400).json({ message: "Owner and dog data are required" });
+    }
+
+    // Step 1: Register the owner
+    const registeredOwner = await usersModel.registerOwner(owner);
+
+    // Step 2: Register the dog
+    const registeredDog = await dogsModel.registerDog(dog);
+
+    // Step 3: Link the owner and dog
+    await dogsModel.linkOwnerAndDog(registeredOwner.email, registeredDog.dogid);
+
+    // Send a success response
+    res.status(201).json({
+      message: "Owner and dog registered successfully",
+      owner: registeredOwner,
+      dog: registeredDog,
+    });
+  } catch (error) {
+    console.error("Error in registerOwnerAndDog:", error.message); // Log the error
+    res.status(500).json({ message: "Server Error", error: error.message }); // Send error response
+  }
+};
+
+
+
   
