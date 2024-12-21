@@ -2,10 +2,9 @@ const db = require('../db/db');
 
 // Fetch upcoming and past meetings
 exports.getMeetingsByUser = async (email) => {
-    const query = `
+  const query = `
       SELECT 
-        m.date,
-        m.hour,
+        (m.date + m.hour)::timestamp AT TIME ZONE 'UTC' AS datetime,
         m.location,
         m.subject,
         m.meeting_id,
@@ -21,24 +20,23 @@ exports.getMeetingsByUser = async (email) => {
       JOIN public.dog d1 ON bt1.dogid = d1.dogid
       JOIN public.dog d2 ON bt2.dogid = d2.dogid
       WHERE m.owneremail1 = $1 OR m.owneremail2 = $1
-      ORDER BY m.date ASC, m.hour ASC;
-    `;
-  
-    const result = await db.query(query, [email]);
-    return result.rows;
-  };
+      ORDER BY datetime ASC;
+  `;
 
-  // Check if a meeting exists by meeting_id
-  exports.checkMeetingExists = async (meeting_id) => {
-    const query = `SELECT * FROM public.meeting WHERE meeting_id = $1`;
-    const result = await db.query(query, [meeting_id]);
-    return result.rowCount > 0; // Return true if the meeting exists, false otherwise
-  };
-  
-  // Delete a meeting by meeting_id
-  exports.deleteMeetingById = async (meeting_id) => {
-    const query = `DELETE FROM public.meeting WHERE meeting_id = $1 RETURNING *`;
-    const result = await db.query(query, [meeting_id]);
-    return result.rowCount > 0; // Return true if a row was deleted, false otherwise
-  };
-  
+  const result = await db.query(query, [email]);
+  return result.rows;
+};
+
+// Check if a meeting exists by meeting_id
+exports.checkMeetingExists = async (meeting_id) => {
+  const query = `SELECT * FROM public.meeting WHERE meeting_id = $1`;
+  const result = await db.query(query, [meeting_id]);
+  return result.rowCount > 0; // Return true if the meeting exists, false otherwise
+};
+
+// Delete a meeting by meeting_id
+exports.deleteMeetingById = async (meeting_id) => {
+  const query = `DELETE FROM public.meeting WHERE meeting_id = $1 RETURNING *`;
+  const result = await db.query(query, [meeting_id]);
+  return result.rowCount > 0; // Return true if a row was deleted, false otherwise
+};
