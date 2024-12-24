@@ -34,7 +34,6 @@ exports.getAllDogs = async (req, res) => {
   }
 };
 
-
 exports.getDogById = async (req, res) => {
   try {
     const dog = await dogsModel.getDogById(req.params.id);
@@ -48,11 +47,16 @@ exports.getDogById = async (req, res) => {
   }
 };
 
-
 exports.getNotFriendsDogsAndOwners = async (req, res) => {
   try {
     // Extract the query parameter for email
     const loggedInUserEmail = req.query.email;
+    // Extract the query parameters for filters
+    const filters = {
+      city: req.query.city || null,
+      sex: req.query.sex || null,
+      breed: req.query.breed || null,
+    };
 
     // Log the extracted email for debugging
     console.log('Received email:', loggedInUserEmail);
@@ -62,7 +66,10 @@ exports.getNotFriendsDogsAndOwners = async (req, res) => {
     }
 
     // Call the model function to fetch the data
-    const notFriendsDogsAndOwners = await dogsModel.getNotFriendsDogsAndOwners(loggedInUserEmail);
+    const notFriendsDogsAndOwners = await dogsModel.getNotFriendsDogsAndOwners(
+      loggedInUserEmail,
+      filters
+    );
 
     // Respond with the data
     res.status(200).json(notFriendsDogsAndOwners);
@@ -121,7 +128,6 @@ exports.getOwnerWithoutDog = async (req, res) => {
     res.status(500).json({ message: 'Server Error', error: error.message });
   }
 };
-
 
 // Controller function to handle requests for fetching a dog and its owner
 exports.getDogAndOwner = async (req, res) => {
@@ -185,7 +191,9 @@ exports.getFriendsDogsAndOwners = async (req, res) => {
       return res.status(400).json({ message: 'User email is required' });
     }
 
-    const friendsDogsAndOwners = await dogsModel.getFriendsDogsAndOwners(loggedInUserEmail);
+    const friendsDogsAndOwners = await dogsModel.getFriendsDogsAndOwners(
+      loggedInUserEmail
+    );
     res.status(200).json(friendsDogsAndOwners);
   } catch (error) {
     console.error('Error in getFriendsDogsAndOwners:', error.message);
@@ -193,20 +201,21 @@ exports.getFriendsDogsAndOwners = async (req, res) => {
   }
 };
 
-
 // Get logged in owner's information and dog's:
 exports.getOwnerAndDog = async (req, res) => {
   try {
     const loggedInUserEmail = req.query.email; // Get email from query parameter
 
     if (!loggedInUserEmail) {
-      return res.status(400).json({ message: "User email is required" });
+      return res.status(400).json({ message: 'User email is required' });
     }
 
     const ownerAndDogData = await dogsModel.getOwnerAndDog(loggedInUserEmail);
 
     if (!ownerAndDogData || ownerAndDogData.length === 0) {
-      return res.status(404).json({ message: "No owner or dog found for the given email" });
+      return res
+        .status(404)
+        .json({ message: 'No owner or dog found for the given email' });
     }
 
     // Transforming the database result into the required JSON structure
@@ -237,8 +246,8 @@ exports.getOwnerAndDog = async (req, res) => {
 
     res.status(200).json(formattedResponse);
   } catch (error) {
-    console.error("Error in getOwnerAndDog:", error.message);
-    res.status(500).json({ message: "Server Error", error: error.message });
+    console.error('Error in getOwnerAndDog:', error.message);
+    res.status(500).json({ message: 'Server Error', error: error.message });
   }
 };
 
@@ -250,20 +259,20 @@ exports.updateDog = async (req, res) => {
     const updatedData = req.body; // Extract updated dog data
 
     if (!dogId) {
-      return res.status(400).json({ message: "Dog ID is required" });
+      return res.status(400).json({ message: 'Dog ID is required' });
     }
 
     const updatedDog = await dogsModel.updateDog(dogId, updatedData); // Call model function
 
     if (!updatedDog) {
-      return res.status(404).json({ message: "Dog not found" });
+      return res.status(404).json({ message: 'Dog not found' });
     }
 
-    res.status(200).json({ message: "Dog updated successfully", dog: updatedDog });
+    res
+      .status(200)
+      .json({ message: 'Dog updated successfully', dog: updatedDog });
   } catch (error) {
-    console.error("Error updating dog:", error.message);
-    res.status(500).json({ message: "Server Error", error: error.message });
+    console.error('Error updating dog:', error.message);
+    res.status(500).json({ message: 'Server Error', error: error.message });
   }
 };
-
-

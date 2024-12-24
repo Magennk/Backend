@@ -75,8 +75,9 @@ exports.getDogById = async (id) => {
 // The logged-in user’s data.
 // The logged-in user’s friends (based on the communication table).
 // The logged-in user's friends request (that he sent).
-exports.getNotFriendsDogsAndOwners = async (loggedInUserEmail) => {
-  const query = `
+exports.getNotFriendsDogsAndOwners = async (loggedInUserEmail, filters) => {
+  const { city, sex, breed } = filters;
+  let query = `
     SELECT 
         d.dogid AS id,
         d.name,
@@ -109,15 +110,33 @@ exports.getNotFriendsDogsAndOwners = async (loggedInUserEmail) => {
         ON (c.owneremail1 = o.email AND c.owneremail2 = $1) 
         OR (c.owneremail2 = o.email AND c.owneremail1 = $1)
     WHERE 
-        c.isfriend IS DISTINCT FROM true -- Exclude friends
+        (c.isfriend IS DISTINCT FROM true) -- Exclude friends
         AND (c.iswaitingconfirmation IS DISTINCT FROM true OR c.iswaitingconfirmation IS NULL) -- Exclude pending requests
-        AND o.email != $1 -- Exclude the logged-in user
-    ORDER BY 
-        d.dogid ASC;
+        AND (o.email != $1) -- Exclude the logged-in user
   `;
+  const params = [loggedInUserEmail];
+  // Add filters dynamically
+  if (city) {
+    query += ' AND (d.region = $2)'; //+ (params.length + 1);
+    params.push(city);
+  }
+  if (sex) {
+    query += ' AND (d.sex = $3)'; //+ (params.length + 1);
+    params.push(sex);
+  }
+  if (breed) {
+    query += ' AND (d.breed = $4)'; //+ (params.length + 1);
+    params.push(breed);
+  }
+  // Add ORDER BY clause at the end
+  query += ' ORDER BY d.dogid ASC;';
 
-  console.log('Executing query with email:', loggedInUserEmail); // Debug log
-  const result = await db.query(query, [loggedInUserEmail]);
+  console.log(
+    'Executing getNotFriendsDogsAndOwners query with email:',
+    loggedInUserEmail
+  ); // Debug log
+  console.log('With params:', params); // Debug params
+  const result = await db.query(query, params);
   return result.rows;
 };
 
@@ -169,7 +188,6 @@ exports.getOwnerWithoutDog = async (ownerEmail) => {
   const result = await db.query(query, [ownerEmail]);
   return result.rows[0]; // Return a single owner
 };
-
 
 // Function to fetch details of a specific dog and its owner
 exports.getDogAndOwner = async (dogId) => {
@@ -328,10 +346,9 @@ exports.updateDog = async (dogId, updatedData) => {
   return result.rows[0]; // Return the updated dog information
 };
 
-
 // Function to register a new dog to the database
 exports.registerDog = async (dogData) => {
-  console.log("register Dog data:");
+  console.log('register Dog data:');
   console.log(dogData);
   const query = `
     INSERT INTO public.dog (name, yearofbirth, sex, breed, region, isvaccinated, isgoodwithkids, isgoodwithanimals, isinrestrictedbreedscategory, description, energylevel, image)
@@ -356,7 +373,7 @@ exports.registerDog = async (dogData) => {
   return result.rows[0]; // Return inserted dog data
 };
 
-// Function to connect owner and dog  
+// Function to connect owner and dog
 exports.linkOwnerAndDog = async (ownerEmail, dogId) => {
   const query = `
     INSERT INTO public.belongs_to (owneremail, dogid)
@@ -365,4 +382,3 @@ exports.linkOwnerAndDog = async (ownerEmail, dogId) => {
   const values = [ownerEmail, dogId];
   await db.query(query, values); // Execute query, no return needed
 };
-
