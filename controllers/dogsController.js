@@ -53,9 +53,9 @@ exports.getNotFriendsDogsAndOwners = async (req, res) => {
     const loggedInUserEmail = req.query.email;
     // Extract the query parameters for filters
     const filters = {
-      city: req.query.city || null,
-      sex: req.query.sex || null,
-      breed: req.query.breed || null,
+      city: req.query.city || '',
+      sex: req.query.sex || '',
+      breed: req.query.breed || '',
     };
 
     // Log the extracted email for debugging

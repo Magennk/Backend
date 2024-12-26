@@ -115,17 +115,16 @@ exports.getNotFriendsDogsAndOwners = async (loggedInUserEmail, filters) => {
         AND (o.email != $1) -- Exclude the logged-in user
   `;
   const params = [loggedInUserEmail];
-  // Add filters dynamically
   if (city) {
-    query += ' AND (d.region = $2)'; //+ (params.length + 1);
+    query += ` AND d.region = $${params.length + 1}`;
     params.push(city);
   }
   if (sex) {
-    query += ' AND (d.sex = $3)'; //+ (params.length + 1);
+    query += ` AND d.sex = $${params.length + 1}`;
     params.push(sex);
   }
   if (breed) {
-    query += ' AND (d.breed = $4)'; //+ (params.length + 1);
+    query += ` AND d.breed = $${params.length + 1}`;
     params.push(breed);
   }
   // Add ORDER BY clause at the end
