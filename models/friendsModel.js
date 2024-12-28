@@ -1,4 +1,4 @@
-const db = require("../db/db");
+const db = require('../db/db');
 
 // Model to fetch all friends of a logged-in user
 exports.getFriends = async (userEmail) => {
@@ -64,10 +64,9 @@ exports.getFriends = async (userEmail) => {
   return formattedData;
 };
 
-
 // Model to fetch pending friend requests for a user
 exports.getFriendRequests = async (userEmail) => {
-    const query = `
+  const query = `
       SELECT 
         d.dogid AS id,
         d.name AS name,
@@ -97,38 +96,37 @@ exports.getFriendRequests = async (userEmail) => {
         AND c.isfriend = false
         AND c.iswaitingconfirmation = true;
     `;
-  
-    const result = await db.query(query, [userEmail]);
-  
-    // Map the result to the requested JSON structure
-    const formattedData = result.rows.map((row) => ({
-      id: row.id,
-      name: row.name,
-      breed: row.breed,
-      age: parseFloat(row.age).toFixed(1), // Age rounded to 1 decimal
-      sex: row.sex,
-      region: row.region,
-      isvaccinated: row.isvaccinated,
-      isgoodwithkids: row.isgoodwithkids,
-      isgoodwithanimals: row.isgoodwithanimals,
-      isinrestrictedbreedscategory: row.isinrestrictedbreedscategory,
-      description: row.description,
-      energylevel: row.energylevel,
-      image: row.dog_image || `/data/images/${row.id}.jpeg`, // Fallback image
-      owner: {
-        firstname: row.firstname,
-        lastname: row.lastname,
-        email: row.email,
-        gender: row.gender,
-        age: row.owner_age,
-        city: row.city,
-        image: row.owner_image || `/data/owners/${row.email}.jpeg`, // Fallback owner image
-      },
-    }));
-  
-    return formattedData;
-  };
-  
+
+  const result = await db.query(query, [userEmail]);
+
+  // Map the result to the requested JSON structure
+  const formattedData = result.rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    breed: row.breed,
+    age: parseFloat(row.age).toFixed(1), // Age rounded to 1 decimal
+    sex: row.sex,
+    region: row.region,
+    isvaccinated: row.isvaccinated,
+    isgoodwithkids: row.isgoodwithkids,
+    isgoodwithanimals: row.isgoodwithanimals,
+    isinrestrictedbreedscategory: row.isinrestrictedbreedscategory,
+    description: row.description,
+    energylevel: row.energylevel,
+    image: row.dog_image || `/data/images/${row.id}.jpeg`, // Fallback image
+    owner: {
+      firstname: row.firstname,
+      lastname: row.lastname,
+      email: row.email,
+      gender: row.gender,
+      age: row.owner_age,
+      city: row.city,
+      image: row.owner_image || `/data/owners/${row.email}.jpeg`, // Fallback owner image
+    },
+  }));
+
+  return formattedData;
+};
 
 // Model to send a friend request
 exports.sendFriendRequest = async (senderEmail, recipientEmail) => {
@@ -160,4 +158,19 @@ exports.removeFriend = async (email1, email2) => {
   `;
   const result = await db.query(query, [email1, email2]);
   return result.rowCount > 0; // Return true if deleted
+};
+
+// Check if the logged in user and the given user are friends or not
+exports.checkIfFriends = async (email1, email2) => {
+  const query = `
+      SELECT COUNT(*)
+      FROM public.communication
+      WHERE 
+          ((owneremail1 = $1 AND owneremail2 = $2) OR 
+          (owneremail1 = $2 AND owneremail2 = $1))
+          AND isfriend = true;
+  `;
+  const values = [email1, email2];
+  const result = await db.query(query, values);
+  return parseInt(result.rows[0].count, 10) > 0; // Return true if count > 0
 };
