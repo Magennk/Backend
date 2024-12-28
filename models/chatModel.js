@@ -78,19 +78,27 @@ exports.getMessagesByChatId = async (chatId) => {
 };
 
 // Get chat users
-exports.getChatUsers = async (email) => {
-  try {
-    const query = `
-      SELECT DISTINCT c.chatid, o.firstname, o.lastname, o.city, o.image
-      FROM public.chat c
-      JOIN public.owner o
-        ON (c.owneremail1 = o.email OR c.owneremail2 = o.email)
-      WHERE (c.owneremail1 = $1 OR c.owneremail2 = $1) AND o.email != $1;
-    `;
-    const result = await db.query(query, [email]);
-    return result.rows;
-  } catch (error) {
-    console.error('Error in getChatUsers:', error.message);
-    throw error;
-  }
+exports.getChatUsers = async (userEmail) => {
+  const query = `
+    SELECT 
+      c.chatid,
+      CASE
+        WHEN c.owneremail1 = $1 THEN c.owneremail2
+        ELSE c.owneremail1
+      END AS receiveremail,
+      o.firstname,
+      o.lastname,
+      o.city,
+      o.image
+    FROM public.chat c
+    JOIN public.owner o 
+      ON o.email = CASE
+        WHEN c.owneremail1 = $1 THEN c.owneremail2
+        ELSE c.owneremail1
+      END
+    WHERE c.owneremail1 = $1 OR c.owneremail2 = $1
+    ORDER BY c.startdate DESC, c.starttime DESC;
+  `;
+  const result = await db.query(query, [userEmail]);
+  return result.rows;
 };

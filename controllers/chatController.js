@@ -41,6 +41,12 @@ exports.sendMessage = async (req, res) => {
 
     // Validate input
     if (!chatId || !senderEmail || !receiverEmail || !messageText) {
+      console.error('Missing fields in request:', {
+        chatId,
+        senderEmail,
+        receiverEmail,
+        messageText,
+      });
       return res.status(400).json({ message: 'All fields are required.' });
     }
 
@@ -96,23 +102,14 @@ exports.getMessages = async (req, res) => {
  */
 exports.getChatUsers = async (req, res) => {
   try {
-    const { email } = req.query;
-
-    // Validate input
-    if (!email) {
-      return res.status(400).json({ message: 'User email is required.' });
+    const userEmail = req.query.email;
+    if (!userEmail) {
+      return res.status(400).json({ message: 'User email is required' });
     }
-
-    // Delegate to the model to fetch chat users
-    const users = await chatModel.getChatUsers(email);
-
-    // Respond with the list of users
+    const users = await chatModel.getChatUsers(userEmail);
     res.status(200).json({ users });
   } catch (error) {
     console.error('Error in getChatUsers:', error.message);
-    res.status(500).json({
-      message: 'Server error while fetching chat users.',
-      error: error.message,
-    });
+    res.status(500).json({ message: 'Server Error', error: error.message });
   }
 };
